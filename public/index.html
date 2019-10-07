@@ -2,12 +2,20 @@
 <html>
     <head>
         <title>WebRTC Lynce</title>
+        <link rel="stylesheet" href="./css/all.css">
         <link rel="stylesheet" href="./css/main.css" />
     </head>
 
     <body>
 
-        <h1>WebRTC</h1>
+        <div class="control">
+            <div class="mic">
+                <i class="fas fa-microphone mic-on" id="mic"></i>
+            </div>
+            <div class="vol">
+                <i class="fas fa-volume-up vol-on" id="vol"></i>
+            </div>
+        </div>
         <div id="videos">
             <video id="localVideo" autoplay muted></video>
             <video id="remoteVideo" autoplay></video>

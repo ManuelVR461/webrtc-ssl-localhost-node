@@ -6,6 +6,8 @@ var isStarted = false;
 
 var localStream;
 var remoteStream;
+var localaudiotrack;
+var remoteaudiotrack;
 
 var pc;
 
@@ -128,6 +130,11 @@ navigator.mediaDevices.getUserMedia(constraints)
 function gotStream(stream) {
     console.log('Agregando Stream Local.');
     localStream = stream;
+
+    localaudiotrack = localStream.getAudioTracks();
+
+    //console.log(localaudiotrack[0]);
+
     localVideo.srcObject = stream;
     enviarMensaje('got user media');
     if (isInitiator) {
@@ -251,6 +258,7 @@ function requestTurn(turnURL) {
 function handleRemoteStreamAdded(event) {
     console.log('Stream Remoto Agregado.');
     remoteStream = event.stream;
+    remoteaudiotrack = remoteStream.getAudioTracks();
     remoteVideo.srcObject = remoteStream;
 }
 
@@ -275,67 +283,45 @@ function stop() {
     pc.close();
     pc = null;
 }
-////////////////////////////7
 
-(function(window, document) {
+function onoff(event) {
+    var data = event.data;
 
-    // Create the DOM structure to hold the console messages
-  
-    var div = document.createElement("div");
-    div.style.cssText = "position: absolute; " +
-      "top: 5px; left: 5px; right: 5px; bottom: 5px; " +
-      "padding: 10px; " +
-      "overflow-y: auto; " + 
-      "display: none; " + 
-      "background: rgba(0, 32, 0, 0.9); " +
-      "border: 3px solid #888; " + 
-      "font: 14px Consolas,Monaco,Monospace; " +
-      "color: #ddd; " + 
-      "z-indez: 500";
-  
-    var ul = document.createElement("ul");
-    ul.style.cssText = "padding: 0; list-style-type: none; margin: 0";
-    div.appendChild(ul)
-  
-    document.body.appendChild(div);
-  
-    var toggleButton = document.createElement("button");
-    toggleButton.innerText = "Console";
-    toggleButton.style.cssText = "position: absolute; right: 10px; top: 10px; z-index: 501";
-  
-    toggleButton.addEventListener("click", function () {
-      div.style.display = div.style.display === "none" ? "block" : "none";
-    });
-  
-    document.body.appendChild(toggleButton);
-    
-    var clearButton = document.createElement("button");
-    clearButton.innerText = "Clear";
-    clearButton.style.cssText = "position: absolute; right: 10px; top: 30px; z-index: 501";
-      
-    clearButton.addEventListener("click", function() {
-      ul.innerHTML = "";
-    });
-      
-    div.appendChild(clearButton);
-    
-    function addMsg(msg) {
-      var li = document.createElement("li");
-      li.innerText = msg;
-      ul.appendChild(li);
+    if (data.isMediaStreamTrackDisabled == true) {
+        emitEvent('mediatrackdisabled', true);
+    } else emitEvent('mediatrackdisabled', false);
+};
+
+//////////////////////////////////////////777777
+var mic = document.getElementById("mic")
+var vol = document.getElementById("vol")
+
+mic.addEventListener("click", mic_act)
+vol.addEventListener("click", vol_act)
+
+function vol_act() {
+    if (vol.className == "fas fa-volume-mute vol-off") {
+        vol.className = "fas fa-volume-up vol-on";
+        if(remoteVideo.paused){
+            remoteVideo.play();
+        }
+    } else {
+        vol.className = "fas fa-volume-mute vol-off";
+        remoteVideo.pause();
     }
-  
-    // Monkey-patch console object
-  
-    var methods = ["log", "debug", "error", "info", "warn"];
-  
-    for (var i = 0; i < methods.length; i++) {
-      var method = methods[i];
-      var original = window.console[method];
-      window.console[method] = function(msg) {
-        addMsg(msg);
-        original.apply(window.console, arguments);
-      };
+}
+
+function mic_act() {
+    if (mic.className == "fas fa-microphone-slash mic-off") {
+        mic.className = "fas fa-microphone mic-on"
+        if(localaudiotrack[0]){
+             localaudiotrack[0].enabled = true;    
+        }
+        
+    } else {
+        mic.className = "fas fa-microphone-slash mic-off"
+        if(localaudiotrack[0]){
+            localaudiotrack[0].enabled = false;    
+        }
     }
-  
-  })(window, document);
+}
